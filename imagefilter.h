@@ -13,6 +13,7 @@ public:
     static QImage greyScale(QImage image);
     static QImage lighten(QImage image, int value);
     static QImage darken(QImage image, int value);
+    static QImage median(QImage image, int filterWidth);
 };
 
 #endif // IMAGEFILTER_H

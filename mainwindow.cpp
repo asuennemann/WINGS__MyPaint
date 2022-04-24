@@ -27,10 +27,13 @@ MainWindow::MainWindow(QWidget *parent)
     QObject::connect(actLighten, SIGNAL(triggered()), this, SLOT(lighten()));
     QAction *actDarken = new QAction(tr("&Abdunkeln"), this);
     QObject::connect(actDarken, SIGNAL(triggered()), this, SLOT(darken()));
+    QAction *actFilterMedian = new QAction(tr("Filter Median"), this);
+    QObject::connect(actFilterMedian, SIGNAL(triggered()), this, SLOT(filterMedian()));
     QMenu *filterMenu = new QMenu(tr("&Filter"), this);
     filterMenu->addAction(actGreyScale);
     filterMenu->addAction(actLighten);
     filterMenu->addAction(actDarken);
+    filterMenu->addAction(actFilterMedian);
     this->menuBar()->addMenu(filterMenu);
 }
 
@@ -97,6 +100,16 @@ void MainWindow::darken(void)
     {
         int value = QInputDialog::getInt(this, tr("Aufhellen"), tr("Wert für Aufhellung:"), 0, 0, 255);
         *this->imageData = ImageFilter::darken(*this->imageData, value);
+        this->image->setPixmap(QPixmap::fromImage(*this->imageData));
+    }
+}
+
+void MainWindow::filterMedian(void)
+{
+    if(this->imageData != NULL)
+    {
+        int filterSize = QInputDialog::getInt(this, tr("Filtergröße"), tr("Größe des Filteres:"), 3, 2, 31);
+        *this->imageData = ImageFilter::median(*this->imageData, filterSize);
         this->image->setPixmap(QPixmap::fromImage(*this->imageData));
     }
 }

@@ -41,5 +41,6 @@ public slots:
     void greyScale(void);
     void lighten(void);
     void darken(void);
+    void filterMedian(void);
 };
 #endif // MAINWINDOW_H

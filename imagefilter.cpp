@@ -1,5 +1,7 @@
 #include "imagefilter.h"
 
+#include <algorithm>
+
 ImageFilter::ImageFilter()
 {
 
@@ -55,4 +57,63 @@ QImage ImageFilter::lighten(QImage image, int value)
 QImage ImageFilter::darken(QImage image, int value)
 {
     return ImageFilter::lighten(image, value * (-1));
+}
+
+// median filter works for width = 3, but not for width >= 5
+/** ToDo */
+QImage ImageFilter::median(QImage image, int filterWidth)
+{
+    QColor pxOrg, pxNew;
+    int red, green, blue;
+    int filterSize, filterHalfSize, filterHalfWidth;
+    int padding;
+    QImage filteredImage;
+
+    QColor *filterPxArray;
+    int *filterRedValues;
+    int *filterGreenValues;
+    int *filterBlueValues;
+
+    if(filterWidth % 2 != 1) return image;
+    filterSize = filterWidth * filterWidth;
+    filterHalfSize = filterSize / 2;
+    filterHalfWidth = filterWidth / 2;
+    padding = filterHalfWidth;
+
+    filterRedValues = new int[filterSize];
+    filterGreenValues = new int[filterSize];
+    filterBlueValues = new int[filterSize];
+
+    // Arbeitskopie des zu filternden Bildes anfertigen
+    filteredImage = image.copy();
+
+    // Bild Zeilenweise durchgehen
+    for(unsigned long int y = padding; y < image.height() - padding; y++)
+    {
+        for(unsigned long int x = padding; x < image.width() - padding; x++)
+        {
+            for(int j = 0; j < filterWidth; j++)
+            {
+                for(int i = 0; i < filterWidth; i++)
+                {
+                    int posX = x - filterHalfWidth + i;
+                    int posY = y - filterHalfWidth + j;
+                    pxOrg = image.pixelColor(posX, posY);
+                    filterRedValues[i + j] = pxOrg.red();
+                    filterGreenValues[i + j] = pxOrg.green();
+                    filterBlueValues[i + j] = pxOrg.blue();
+                }
+            }
+            std::sort(filterRedValues, filterRedValues + filterSize - 1);
+            std::sort(filterGreenValues, filterGreenValues + filterSize - 1);
+            std::sort(filterBlueValues, filterBlueValues + filterSize - 1);
+            pxNew.setRgb(filterRedValues[filterHalfSize], filterGreenValues[filterHalfSize], filterBlueValues[filterHalfSize]);
+            filteredImage.setPixelColor(x, y, pxNew);
+        }
+    }
+
+    delete[] filterRedValues;
+    delete[] filterGreenValues;
+    delete[] filterBlueValues;
+    return filteredImage.copy(padding, padding, filteredImage.width() - padding * 2, filteredImage.height() - padding * 2);
 }
